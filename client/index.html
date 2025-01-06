@@ -234,10 +234,10 @@
     </div>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-        const socket = io('http://localhost:3000', { withCredentials: true});
+        const socket = io('http://localhost:3000', { withCredentials: true });
         let gameState = {};
         let currentPlayerId = null;
-
+    
         async function fetchAPI(endpoint, options = {}) {
             const baseURL = 'http://localhost:3000/api';
             const defaultOptions = {
@@ -247,7 +247,7 @@
                 },
                 ...options
             };
-
+    
             try {
                 const response = await fetch(`${baseURL}${endpoint}`, defaultOptions);
                 const data = await response.json();
@@ -262,14 +262,14 @@
                 throw error;
             }
         }
-
+    
         async function joinGame() {
             const playerName = document.getElementById('player-name').value;
             if (!playerName) {
                 showError('Please enter a name');
                 return;
             }
-
+    
             try {
                 const result = await fetchAPI('/game/join', {
                     method: 'POST',
@@ -283,21 +283,19 @@
                 showError('Failed to join game: ' + error.message);
             }
         }
-
+    
         async function kickDoor() {
             try {
-                const result = await fetchAPI('/game/kick-door', {
+                const result = await fetchAPI('/turn/kick-door', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        playerId: currentPlayerId
-                    })
+                    body: JSON.stringify({ playerId: currentPlayerId })
                 });
-                updateGameState(result.gameState);
+                updateGameState(result);
             } catch (error) {
                 showError(error.message);
             }
         }
-
+    
         async function lookForTrouble() {
             try {
                 const selectedMonster = getSelectedMonsterFromHand();
@@ -305,105 +303,73 @@
                     showError('Select a monster card from your hand first');
                     return;
                 }
-
-                const result = await fetchAPI('/game/combat/start', {
+    
+                const result = await fetchAPI('/turn/trouble-or-loot', {
                     method: 'POST',
                     body: JSON.stringify({
                         playerId: currentPlayerId,
-                        monsterId: selectedMonster.id
+                        action: 'trouble'
                     })
                 });
-                updateGameState(result.gameState);
+                updateGameState(result);
             } catch (error) {
                 showError(error.message);
             }
         }
-
+    
         async function lootTheRoom() {
             try {
-                const result = await fetchAPI('/game/loot', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        playerId: currentPlayerId
-                    })
-                });
-                updateGameState(result.gameState);
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function endTurn() {
-            try {
-                if (gameState.currentPlayer && gameState.currentPlayer.hand.length > 5) {
-                    const excessCards = await handleCharityPhase();
-                    if (!excessCards) return;
-                }
-
-                const result = await fetchAPI('/game/next-turn', {
-                    method: 'POST'
-                });
-                updateGameState(result.gameState);
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function playCard(cardId) {
-            try {
-                const result = await fetchAPI('/card/play', {
+                const result = await fetchAPI('/turn/trouble-or-loot', {
                     method: 'POST',
                     body: JSON.stringify({
                         playerId: currentPlayerId,
-                        cardId: cardId
+                        action: 'loot'
                     })
                 });
-                updateGameState(result.gameState);
+                updateGameState(result);
             } catch (error) {
                 showError(error.message);
             }
         }
-
-        function getSelectedMonsterFromHand() {
-            // For now, just return the first monster card in the player's hand
-            return gameState.currentPlayer.hand.find(card => card.type === 'Monster');
-        }
-
-        async function handleCharityPhase() {
-            // Simple implementation: discard random cards until hand size is 5
-            const excessCards = gameState.currentPlayer.hand.slice(5);
-            if (excessCards.length > 0) {
-                try {
-                    await fetchAPI('/game/charity', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            playerId: currentPlayerId,
-                            cardIds: excessCards.map(card => card.id)
-                        })
-                    });
-                    return excessCards;
-                } catch (error) {
-                    showError('Failed to handle charity phase: ' + error.message);
-                    return null;
-                }
+    
+        async function endTurn() {
+            try {
+                const result = await fetchAPI('/turn/end', {
+                    method: 'POST',
+                    body: JSON.stringify({ playerId: currentPlayerId })
+                });
+                updateGameState(result);
+            } catch (error) {
+                showError(error.message);
             }
-            return [];
         }
-
+    
+        async function handleCharityPhase() {
+            try {
+                const result = await fetchAPI('/turn/charity', {
+                    method: 'POST',
+                    body: JSON.stringify({ playerId: currentPlayerId })
+                });
+                updateGameState(result);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+    
         function showError(message) {
             console.error(message);
             alert(message);
         }
-
+    
         function updateGameState(state) {
             console.log('Updating game state:', state);
             gameState = state;
             updateUI();
         }
-
+    
         function updateUI() {
             document.getElementById('game-status').textContent = gameState.status || 'Unknown';
-
+    
             const playersList = document.getElementById('players-list');
             playersList.innerHTML = '';
             if (gameState.players) {
@@ -418,17 +384,17 @@
                     playersList.appendChild(playerDiv);
                 });
             }
-
-            document.getElementById('door-deck-count').textContent = gameState.doorDeck ? gameState.doorDeck.length : 0;
-            document.getElementById('treasure-deck-count').textContent = gameState.treasureDeck ? gameState.treasureDeck.length : 0;
-
+    
+            document.getElementById('door-deck-count').textContent = gameState.dungeonDeckCount || 0;
+            document.getElementById('treasure-deck-count').textContent = gameState.treasureDeckCount || 0;
+    
             const monsterCard = document.getElementById('monster-card');
             if (gameState.currentCombat) {
                 monsterCard.textContent = `Fighting: ${gameState.currentCombat.monster.name} (Level ${gameState.currentCombat.monster.level})`;
             } else {
                 monsterCard.textContent = 'No monster in play';
             }
-
+    
             const playerHand = document.getElementById('player-hand');
             playerHand.innerHTML = '';
             if (gameState.currentPlayer && gameState.currentPlayer.hand) {
@@ -440,31 +406,16 @@
                     playerHand.appendChild(cardDiv);
                 });
             }
-
+    
             document.getElementById('kick-door-btn').disabled = !gameState.canKickDoor;
             document.getElementById('look-for-trouble-btn').disabled = !gameState.canLookForTrouble;
             document.getElementById('loot-room-btn').disabled = !gameState.canLootRoom;
             document.getElementById('end-turn-btn').disabled = !gameState.canEndTurn;
         }
-
-        socket.on('gameStateUpdate', (state) => {
-            updateGameState(state);
-        });
-
-        socket.on('playerJoined', (player) => {
-            console.log(`${player.name} joined the game`);
-        });
-
-        socket.on('turnStart', (playerId) => {
-            if (playerId === currentPlayerId) {
-                alert('It\'s your turn!');
-            }
-        });
-
+    
         async function initGame() {
             try {
                 const initialState = await fetchAPI('/game/state');
-                console.log('Initial game state:', initialState);
                 updateGameState(initialState);
             } catch (error) {
                 showError('Failed to initialize game: ' + error.message);

@@ -4,6 +4,7 @@ const Player = require('../domain/entities/Player');
 let game = null;
 
 module.exports = {
+    // Jogador entra no jogo
     joinGame: (req, res) => {
         try {
             const { name } = req.body;
@@ -18,6 +19,7 @@ module.exports = {
         }
     },
 
+    // Retorna o estado atual do jogo
     getGameState: (req, res) => {
         try {
             if (!game) {
@@ -29,62 +31,42 @@ module.exports = {
         }
     },
 
-    kickDoor: (req, res) => {
+    // Inicia o jogo
+    startGame: (req, res) => {
         try {
-            const { playerId } = req.body;
-            const result = game.kickDoor(playerId);
-            res.status(200).json({ gameState: game.getState(), ...result });
+            if (!game || game.players.length < 2) {
+                throw new Error('O jogo precisa de pelo menos 2 jogadores para começar.');
+            }
+            game.startGame();
+            res.status(200).json({ message: 'Jogo iniciado!', gameState: game.getState() });
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     },
 
-    startCombat: (req, res) => {
+    // Finaliza o jogo
+    endGame: (req, res) => {
         try {
-            const { playerId, monsterId } = req.body;
-            const result = game.startCombat(playerId, monsterId);
-            res.status(200).json({ gameState: game.getState(), ...result });
+            if (!game) {
+                throw new Error('Nenhum jogo em andamento para encerrar.');
+            }
+            game.endGame();
+            res.status(200).json({ message: 'Jogo finalizado.', gameState: game.getState() });
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     },
 
-    lootRoom: (req, res) => {
-        try {
-            const { playerId } = req.body;
-            const result = game.lootRoom(playerId);
-            res.status(200).json({ gameState: game.getState(), ...result });
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    },
-
+    // Próximo turno (apenas para fins de debug)
     nextTurn: (req, res) => {
         try {
+            if (!game) {
+                throw new Error('Nenhum jogo em andamento.');
+            }
             const result = game.nextTurn();
-            res.status(200).json({ gameState: game.getState(), ...result });
+            res.status(200).json({ message: 'Turno atualizado.', gameState: game.getState(), ...result });
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     },
-
-    playCard: (req, res) => {
-        try {
-            const { playerId, cardId } = req.body;
-            const result = game.playCard(playerId, cardId);
-            res.status(200).json({ gameState: game.getState(), ...result });
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    },
-
-    charity: (req, res) => {
-        try {
-            const { playerId, cardIds } = req.body;
-            const result = game.handleCharity(playerId, cardIds);
-            res.status(200).json({ gameState: game.getState(), ...result });
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
-    }
 };

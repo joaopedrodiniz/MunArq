@@ -1,29 +1,20 @@
 const express = require('express');
 const router = express.Router();
+
+// Importando handlers
 const GameHandler = require('../handlers/GameHandler');
+const TurnHandler = require('../handlers/TurnHandler'); // Para turnos
 
-// Join game route
-router.post('/join', GameHandler.joinGame);
+// Rotas relacionadas ao jogo
+router.post('/join', GameHandler.joinGame);          // Jogador entra no jogo
+router.get('/state', GameHandler.getGameState);      // Estado atual do jogo
+router.post('/start', GameHandler.startGame);        // Inicia o jogo
+router.post('/end', GameHandler.endGame);            // Finaliza o jogo
 
-// Get game state route
-router.get('/state', GameHandler.getGameState);
-
-// Kick door route
-router.post('/kick-door', GameHandler.kickDoor);
-
-// Start combat route
-router.post('/combat/start', GameHandler.startCombat);
-
-// Loot room route
-router.post('/loot', GameHandler.lootRoom);
-
-// Next turn route
-router.post('/next-turn', GameHandler.nextTurn);
-
-// Play card route
-router.post('/card/play', GameHandler.playCard);
-
-// Charity route
-router.post('/charity', GameHandler.charity);
+// Rotas relacionadas ao turno
+router.post('/turn/kick-door', TurnHandler.kickDoor);               // Arrombar a Porta
+router.post('/turn/trouble-or-loot', TurnHandler.troubleOrLoot);    // Procurar Problemas ou Saquear Sala
+router.post('/turn/charity', TurnHandler.charity);                  // Caridade
+router.post('/turn/end', TurnHandler.endTurn);                      // Encerrar Turno
 
 module.exports = router;
