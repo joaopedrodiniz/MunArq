@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munchkin Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0d6b3;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: #8b4513;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+        }
+
+        .players-list {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .player {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .current-player {
+            background-color: #ffd700;
+        }
+
+        .main-area {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .deck {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            margin: 10px auto;
+            background-color: #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dungeon-deck .card {
+            background-color: #8b4513;
+            color: white;
+        }
+
+        .treasure-deck .card {
+            background-color: #ffd700;
+            color: black;
+        }
+
+        .discard-pile .card {
+            background-color: #666;
+            color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #8b4513;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #6b3410;
+        }
+
+        .player-hand {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .hand-cards {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px;
+        }
+
+        .combat-area {
+            background-color: rgba(139, 69, 19, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .monster-card {
+            background-color: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .game-status {
+            background-color: #8b4513;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>Munchkin Game</h1>
+        </div>
+        
+        <div class="game-status">
+            Game Status: In Progress - Turn 1
+        </div>
+
+        <div class="game-area">
+            <div class="players-list">
+                <h2>Players</h2>
+                <div class="player current-player">
+                    <h3>Player 1</h3>
+                    <p>Level: 1</p>
+                    <p>Cards: 8</p>
+                </div>
+                <div class="player">
+                    <h3>Player 2</h3>
+                    <p>Level: 1</p>
+                    <p>Cards: 8</p>
+                </div>
+            </div>
+
+            <div class="main-area">
+                <div class="game-board">
+                    <div class="deck dungeon-deck">
+                        <h3>Door Deck</h3>
+                        <div class="card">
+                            Door
+                        </div>
+                        <p>Cards remaining: 20</p>
+                    </div>
+
+                    <div class="combat-area">
+                        <h3>Combat Area</h3>
+                        <div class="monster-card">
+                            No monster in play
+                        </div>
+                    </div>
+
+                    <div class="deck treasure-deck">
+                        <h3>Treasure Deck</h3>
+                        <div class="card">
+                            Treasure
+                        </div>
+                        <p>Cards remaining: 20</p>
+                    </div>
+                </div>
+
+                <div class="player-hand">
+                    <h3>Your Hand</h3>
+                    <div class="hand-cards">
+                        <div class="card">Card 1</div>
+                        <div class="card">Card 2</div>
+                        <div class="card">Card 3</div>
+                        <div class="card">Card 4</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button onclick="kickDoor()">Kick Down Door</button>
+                    <button onclick="lookForTrouble()">Look For Trouble</button>
+                    <button onclick="lootTheRoom()">Loot The Room</button>
+                    <button onclick="endTurn()">End Turn</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:3000', { withCredentials: true});
+
+        // Função helper para fazer chamadas API
+        async function fetchAPI(endpoint, options = {}) {
+            const baseURL = 'http://localhost:3000/api';
+            const defaultOptions = {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                ...options
+            };
+
+            try {
+                const response = await fetch(`${baseURL}${endpoint}`, defaultOptions);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro na requisição');
+                }
+                
+                return data;
+            } catch (error) {
+                showError(error.message);
+                throw error;
+            }
+        }
+
+        // Atualizar as funções de API para usar o helper
+        async function kickDoor() {
+            try {
+                await fetchAPI('/game/kick-door', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: getCurrentPlayerId()
+                    })
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function lookForTrouble() {
+            try {
+                const selectedMonster = getSelectedMonsterFromHand();
+                if (!selectedMonster) {
+                    showError('Selecione uma carta de monstro da sua mão primeiro');
+                    return;
+                }
+
+                await fetchAPI('/game/combat/start', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: getCurrentPlayerId(),
+                        monsterId: selectedMonster.id
+                    })
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function lootTheRoom() {
+            try {
+                await fetchAPI('/game/loot', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: getCurrentPlayerId()
+                    })
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function endTurn() {
+            try {
+                if (gameState.currentPlayer.hand.length > 5) {
+                    const excessCards = await handleCharityPhase();
+                    if (!excessCards) return;
+                }
+
+                await fetchAPI('/game/next-turn', {
+                    method: 'POST'
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function playCard(cardId) {
+            try {
+                await fetchAPI('/card/play', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: getCurrentPlayerId(),
+                        cardId: cardId
+                    })
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Função para mostrar erros
+        function showError(message) {
+            console.error(message);
+            // Adicione aqui sua lógica de exibição de erro (toast, alert, etc.)
+        }
+
+        // Buscar estado inicial do jogo
+        fetchAPI('/game/state')
+            .then(state => updateGameState(state))
+            .catch(error => showError(error.message));
+    </script>
+</body>
+</html>
