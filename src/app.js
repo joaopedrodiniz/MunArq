@@ -6,8 +6,8 @@ const gameRoutes = require('./routes/gameRoutes');
 const combatRoutes = require('./routes/combatRoutes');
 const playerRoutes = require('./routes/playerRoutes');
 const cardRoutes = require('./routes/cardRoutes');
-const GameSocket = require('./sockets/GameSocket');
-const PlayerSocket = require('./sockets/PlayerSocket');
+const GameSocket = require('./sockets/gameSocket');
+const PlayerSocket = require('./sockets/playerSocket');
 
 const app = express();
 const server = http.createServer(app);
