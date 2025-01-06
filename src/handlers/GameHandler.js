@@ -86,5 +86,30 @@ module.exports = {
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
+    },
+
+    handleEquipRace(req, res) {
+        try {
+            const { playerId, raceName } = req.body;
+            const game = Game.getInstance();
+            const player = game.getPlayerById(playerId);
+            GameService.equipRace(player, raceName);
+            res.status(200).json({ message: 'Raça equipada com sucesso!' });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    handleEquipClass(req, res) {
+        try {
+            const { playerId, className } = req.body;
+            const game = Game.getInstance();
+            const player = game.getPlayerById(playerId);
+            GameService.equipClass(player, className);
+            res.status(200).json({ message: 'Classe equipada com sucesso!' });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
     }
+
 };

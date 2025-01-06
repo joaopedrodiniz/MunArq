@@ -26,4 +26,7 @@ router.post('/card/play', GameHandler.playCard);
 // Charity route
 router.post('/charity', GameHandler.charity);
 
+router.post('/equip-race', GameHandler.handleEquipRace);
+router.post('/equip-class', GameHandler.handleEquipClass);
+
 module.exports = router;

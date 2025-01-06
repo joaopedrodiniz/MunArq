@@ -227,6 +227,8 @@
                     <button id="kick-door-btn" onclick="kickDoor()">Kick Down Door</button>
                     <button id="look-for-trouble-btn" onclick="lookForTrouble()">Look For Trouble</button>
                     <button id="loot-room-btn" onclick="lootTheRoom()">Loot The Room</button>
+                    <button id="equip-race-btn" onclick="equipRace()">Equip Race</button>
+                    <button id="equip-class-btn" onclick="equipClass()">Equip Class</button>
                     <button id="end-turn-btn" onclick="endTurn()">End Turn</button>
                 </div>
             </div>
@@ -262,6 +264,53 @@
                 throw error;
             }
         }
+
+        async function equipRace() {
+            const raceName = prompt("Enter the name of the race to equip:");
+            if (!raceName) {
+                showError("Race name is required!");
+                return;
+            }
+        
+            try {
+                const result = await fetchAPI('/game/equip-race', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: currentPlayerId,
+                        raceName: raceName
+                    })
+                });
+                alert(result.message);
+                const updatedGameState = await fetchAPI('/game/state');
+                updateGameState(updatedGameState);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function equipClass() {
+            const className = prompt("Enter the name of the class to equip:");
+            if (!className) {
+                showError("Class name is required!");
+                return;
+            }
+        
+            try {
+                const result = await fetchAPI('/game/equip-class', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        playerId: currentPlayerId,
+                        className: className
+                    })
+                });
+                alert(result.message);
+                const updatedGameState = await fetchAPI('/game/state');
+                updateGameState(updatedGameState);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
 
         async function joinGame() {
             const playerName = document.getElementById('player-name').value;
