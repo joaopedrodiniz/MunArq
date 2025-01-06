@@ -1,0 +1,50 @@
+{
+  "players": [
+    {
+      "id": 1,
+      "name": "Felipe",
+      "level": 1,
+      "hand": [],
+      "equippedItems": []
+    },
+    {
+      "id": 2,
+      "name": "Joao",
+      "level": 1,
+      "hand": [],
+      "equippedItems": []
+    }
+  ],
+  "dungeonDeck": [
+    {
+      "id": "c1",
+      "name": "Maldição",
+      "description": "Perde 1 nível.",
+      "type": "Curse"
+    },
+    {
+      "id": "m1",
+      "name": "Goblin",
+      "description": "Um goblin fraco.",
+      "type": "Monster"
+    }
+  ],
+  "treasureDeck": [
+    {
+      "id": "t2",
+      "name": "Poção Mágica",
+      "description": "Aumenta o nível em 3.",
+      "value": 3,
+      "type": "Bonus"
+    },
+    {
+      "id": "t1",
+      "name": "Espada Longa",
+      "description": "Aumenta o nível em 2.",
+      "value": 2,
+      "type": "Bonus"
+    }
+  ],
+  "currentTurn": null,
+  "status": "ended"
+}
